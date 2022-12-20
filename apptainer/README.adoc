@@ -1,0 +1,40 @@
+= Apptainer OpenHPC RPM
+
+This repository provides the `spec` file and patches needed to build an RPM 
+suitable for installing `Apptainer` on an OpenHPC system. 
+https://apptainer.org/[Apptainer] is a container runtime for HPC systems.
+
+IMPORTANT: The Apptainer spec file is modified from the 
+https://github.com/openhpc/ohpc/blob/v2.4.GA/components/runtimes/singularity/SPECS/singularity.spec[Singularity spec file]
+formerly provided by OpenHPC.
+
+== Building the `apptainer-ohpc` RPM
+
+To simplify building the RPM for OpenHPC, we will use 
+https://github.com/rpm-software-management/mock[Mock], a chroot build 
+environment manager, and the Mock Config files found in the `ohpc-rpm-helpers`
+directory.
+
+NOTE: The following documentation will use the variables `$OHPC_CFG`, to refer 
+to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to 
+the `apptainer-ohpc` spec file (typically in the `SPEC` directory), and `$SRPM`, 
+to refer to the source RPM.
+
+Mock works by building an existing source RPM (SRPM). To build the SRPM, run the
+following command from the root directory of this project:
+
+```bash
+rpmbuild -bs --define="_topdir $PWD" $SPEC
+```
+
+This will build an `SRPM` in the `SRPMS` directory, relative to the root of this
+project. Next, we use Mock to create a clean build environment and build the 
+final RPM. In the root directory of this project, run:
+
+```bash
+mock -r $OHPC_CFG --resultdir RPMS/ $SRPM
+```
+
+If all goes well, this will result in an RPM in the `RPMS` directory called 
+something like `apptainer-ohpc-1.1.0-1.ohpc.2.0.0.x86_64.rpm` depending on the 
+architecture you built for and the Apptainer version.
