@@ -1,0 +1,11 @@
+--- conda/base/context.py	2022-12-06 21:16:40.000000000 -0600
++++ conda/base/context_patch.py	2022-12-18 11:04:06.201004988 -0600
+@@ -692,7 +692,7 @@
+             exe = 'conda.exe' if on_win else 'conda'
+             # I was going to use None to indicate a variable to unset, but that gets tricky with
+             # error-on-undefined.
+-            return OrderedDict([('CONDA_EXE', os.path.join(sys.prefix, bin_dir, exe)),
++            return OrderedDict([('CONDA_EXE', os.path.join(self.root_prefix, bin_dir, exe)),
+                                 ('_CE_M', ''),
+                                 ('_CE_CONDA', ''),
+                                 ('CONDA_PYTHON_EXE', sys.executable)])

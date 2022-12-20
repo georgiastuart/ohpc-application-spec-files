@@ -1,0 +1,6 @@
+*.tar.*
+*.whl
+*.rpm
+*.zip
+RPMS
+patch_creation

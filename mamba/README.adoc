@@ -1,0 +1,56 @@
+= Mamba OpenHPC RPM
+
+This repository provides the `spec` file and patches needed to build an RPM 
+suitable for installing `mamba` on an OpenHPC system. 
+https://mamba.readthedocs.io/en/latest/[Mamba] is an open source package manager
+and environment manager primarily (but not exclusively) used for managing Python
+environments and installations. Mamba is a C++ implementation of the popular
+package manager https://docs.conda.io/en/latest/[Conda].
+
+== Building the `mamba-<compiler>-ohpc` RPM
+
+To simplify building the RPM for OpenHPC, we use 
+https://github.com/rpm-software-management/mock[Mock], a chroot build 
+environment manager, and the Mock Config files found in the 
+https://gitlab.trecis.cloud/infrastructure/packages/conda-openhpc[TRECIS OpenHPC
+Build Helpers repository]. 
+To get started, follow the getting started with OpenHPC and Mock documentation.
+
+// TO DO: Actually write the above documentation
+
+NOTE: The following documentation will use the variables `$OHPC_CFG`, to refer 
+to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to 
+the `mamba` spec file (typically in the `SPEC` directory), and 
+`$SRPM`, to refer to the source RPM.
+
+=== Building the `mamba-<compiler>-ohpc` SRPM
+
+Mock works by building an existing source RPM (SRPM). To build the SRPM, run the
+following command from the root directory of this project:
+
+```bash
+rpmbuild -bs --define="_topdir $PWD" \
+  --define="OHPC_COMPILER_FAMILY <desired compiler family>" \
+  SPECS/mamba.spec
+```
+
+This will build an `SRPM` in the `SRPMS` directory, relative to the root of this
+project. Next, we use Mock to create a clean build environment and build the 
+final RPM. In the root directory of this project, run:
+
+```bash
+mock -r $OHPC_CFG \
+  --resultdir RPMS/ \
+  --enable-network \
+  --config-opts=module_enable=python38:3.8 --config-opts=module_enable= \
+  $SRPM
+```
+
+NOTE: Enable network is required since there is a git clone in the build 
+process.
+
+NOTE: The second empty `module_enable` is necessary due to a bug in Mock.
+
+If all goes well, this will result in an RPM in the `RPMS` directory called 
+something like `mamba-gnu9-ohpc-1.0.0-1.ohpc.2.0.0.x86_64.rpm` depending on the 
+architecture you built for, the compiler version, and the mamba version.

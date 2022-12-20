@@ -1,0 +1,50 @@
+= Conda OpenHPC RPM
+
+This repository provides the `spec` file and patches needed to build an RPM 
+suitable for installing https://www.msg.chem.iastate.edu/gamess[GAMESS] on an 
+OpenHPC system. 
+
+== Obtaining the GAMESS source code
+
+GAMESS must be obtained from the 
+https://www.msg.chem.iastate.edu/gamess/License_Agreement.html[GAMESS request
+form] on the https://www.msg.chem.iastate.edu/gamess[GAMESS website]. Do not
+distribute the build RPM per the terms of the GAMESS license. 
+
+== Building the `gamess-<compiler>-<mpi>-ohpc` RPM
+
+To simplify building the RPM for OpenHPC, we will use 
+https://github.com/rpm-software-management/mock[Mock], a chroot build 
+environment manager, and the Mock Config files found in the `ohpc-rpm-helpers`
+directory. To get started, follow the getting started with OpenHPC and Mock 
+documentation.
+
+// TO DO: Actually write the above documentation
+
+NOTE: The following documentation will use the variables `$OHPC_CFG`, to refer 
+to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to 
+the `conda-ohpc` spec file (typically in the `SPEC` directory), and `$SRPM`, 
+to refer to the source RPM.
+
+Mock works by building from an existing source RPM (SRPM). To build the SRPM, 
+run the following command from the root directory of this project:
+
+```bash
+rpmbuild -bs --define="_topdir $PWD" \
+  --define="OHPC_COMPILER_FAMILY <desired compiler family>" \ 
+  --define="OHPC_MPI_FAMILY <desired mpi family>" \
+  $SPEC
+```
+
+This will build an `SRPM` in the `SRPMS` directory, relative to the root of this
+project. Next, we use Mock to create a clean build environment and build the 
+final RPM. In the root directory of this project, run:
+
+```bash
+mock -r $OHPC_CFG --resultdir RPMS/ $SRPM
+```
+
+If all goes well, this will result in an RPM in the `RPMS` directory 
+called something like 
+`gamess-gnu9-openmpi4-ohpc-2022.09.30.R2-1.ohpc.2.0.0.x86_64.rpm` depending 
+on the architecture you built for and the GAMESS version.

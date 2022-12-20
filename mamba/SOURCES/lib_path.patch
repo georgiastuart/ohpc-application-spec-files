@@ -1,0 +1,11 @@
+--- libmamba/CMakeLists.txt	2022-12-17 10:08:26.111432953 -0600
++++ libmamba/CMakeLists_new.txt	2022-12-17 13:24:15.092149384 -0600
+@@ -435,7 +435,7 @@
+             ${LIBSOLV_LIBRARIES}
+             ${LIBSOLVEXT_LIBRARIES}
+             ${LibArchive_LIBRARIES}
+-            ${CURL_LIBRARIES}
++            CURL::libcurl
+             ${OPENSSL_LIBRARIES}
+             yaml-cpp
+             reproc++

@@ -1,0 +1,28 @@
+diff -ur singularity-hpc-0.1.12/shpc/main/container/config.py singularity-hpc-0.1.12_new/shpc/main/container/config.py
+--- singularity-hpc-0.1.12/shpc/main/container/config.py	2022-09-04 21:32:29.000000000 -0500
++++ singularity-hpc-0.1.12_new/shpc/main/container/config.py	2022-10-12 14:23:28.489536835 -0500
+@@ -47,6 +47,8 @@
+         digest = self._tags.get(key, default)
+         if digest:
+             return Tag(key, digest)
++        else: 
++            return Tag(key, None)
+ 
+     def set(self, key, value):
+         self._tags[key] = value
+diff -ur singularity-hpc-0.1.12/shpc/main/container/singularity.py singularity-hpc-0.1.12_new/shpc/main/container/singularity.py
+--- singularity-hpc-0.1.12/shpc/main/container/singularity.py	2022-09-04 21:32:29.000000000 -0500
++++ singularity-hpc-0.1.12_new/shpc/main/container/singularity.py	2022-10-13 20:12:37.849164986 -0500
+@@ -261,10 +261,10 @@
+ 
+         # We pull by the digest
+         if pull_type in ["docker", "oras"]:
+-            container_uri = "%s://%s@%s" % (
++            container_uri = "%s://%s:%s" % (
+                 pull_type,
+                 config.docker or config.oras,
+-                tag.digest,
++                tag.name
+             )
+         elif pull_type == "gh":
+             container_uri = "gh://%s/%s:%s" % (config.gh, tag.digest, tag.name)

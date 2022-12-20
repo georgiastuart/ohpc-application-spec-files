@@ -1,0 +1,32 @@
+= Application Spec Files for OpenHPC
+
+This repository holds a variety of spec files compatible with 
+https://openhpc.community/[the OpenHPC project].
+
+== DISCLAIMERS
+
+Spec files in this repository have not been subjected to verification by the 
+OpenHPC project and this project is not affiliated with OpenHPC. Most have been
+tested on an OpenHPC enabled Rocky 8 system. 
+We can't guarantee the generated RPMs will work for any OpenHPC enabled system. 
+However, if you modify a spec file to make it compatible with your system, 
+please submit a pull request to update the spec.
+
+== LICENSES
+
+The spec files and patches are licensed under an MIT license. Licenses for 
+individual software varies. Please review the licenses for each software 
+before building the RPMs.
+
+== OpenHPC Setup Files
+
+Spec files sometimes refer to 
+
+- `OHPC_macros`
+- `OHPC_setup_compiler`
+- `OHPC_setup_mpi`
+- `OHPC_compiler_deps`
+
+These files can be obtained from the 
+https://github.com/openhpc/ohpc/tree/2.x/components[OpenHPC Project 
+source code].
