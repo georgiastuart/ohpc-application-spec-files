@@ -18,37 +18,41 @@
 
 # Base package name
 %define pname conda
+%define conda_package_handling_version 1.9.0
 %define pluggy_version 1.0.0
 %define pycosat_version 0.6.4
-%define ruamel_version 0.16.10
-%define tqdm_version 4.64.1
-%define setuptools_version 65.6.3
 %define python3_version 3.8
-%define conda_package_handling_version 1.9.0
+%define ruamel_version 0.16.10
+%define ruamelyamlclib_version 0.2.7
+%define setuptools_version 65.6.3
+%define tqdm_version 4.64.1
 
 Name:       %{pname}%{PROJ_DELIM}
 Version:    22.11.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Conda Package Manager
 License:    BSD 3-Clause
 URL:        https://github.com/conda/conda
 
 Source0:   https://github.com/conda/conda/archive/refs/tags/%{version}.tar.gz
 Source1:   https://files.pythonhosted.org/packages/a1/16/db2d7de3474b6e37cbb9c008965ee63835bba517e22cdb8c35b5116b5ce1/pluggy-%{pluggy_version}.tar.gz
-Source2:   https://github.com/conda/pycosat/archive/refs/tags/%{pycosat_version}.tar.gz
-Source3:   https://github.com/commx/ruamel-yaml/archive/refs/tags/%{ruamel_version}.tar.gz
+Source2:   https://github.com/conda/pycosat/archive/refs/tags/%{pycosat_version}.tar.gz#/pycosat-%{pycosat_version}.tar.gz
+Source3:   https://github.com/commx/ruamel-yaml/archive/refs/tags/%{ruamel_version}.tar.gz#/ruamel-yaml-%{ruamel_version}.tar.gz
 Source4:   https://files.pythonhosted.org/packages/c1/c2/d8a40e5363fb01806870e444fc1d066282743292ff32a9da54af51ce36a2/tqdm-%{tqdm_version}.tar.gz
-Source5:   https://github.com/pypa/setuptools/archive/refs/tags/v%{setuptools_version}.tar.gz
+Source5:   https://files.pythonhosted.org/packages/b6/21/cb9a8d0b2c8597c83fce8e9c02884bce3d4951e41e807fc35791c6b23d9a/setuptools-%{setuptools_version}.tar.gz
 Source6:   https://anaconda.org/anaconda/conda-package-handling/%{conda_package_handling_version}/download/linux-64/conda-package-handling-%{conda_package_handling_version}-py38h5eee18b_1.tar.bz2
+Source7:   https://files.pythonhosted.org/packages/d5/31/a3e6411947eb7a4f1c669f887e9e47d61a68f9d117f10c3c620296694a0b/ruamel.yaml.clib-%{ruamelyamlclib_version}.tar.gz
 
-Patch0:     no_system_prefix.patch
-Patch1:     entrypoint.patch
+Patch0:     %{pname}-no_system_prefix.patch
+Patch1:     %{pname}-entrypoint.patch
 
 %define install_path %{OHPC_APPS}/%{pname}%{OHPC_CUSTOM_PKG_DELIM}/%{version}
 
 BuildRequires: python38-devel
-BuildRequires: python38-requests
 BuildRequires: python38-pip
+BuildRequires: python38-requests
+BuildRequires: python38-setuptools_scm
+BuildRequires: python38-toml
 Requires: python38
 Requires: python38-requests
 
@@ -63,11 +67,11 @@ source.
 
 
 %prep
-%setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -n %{pname}-%{version}
+%setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -a 6 -a 7 -n %{pname}-%{version}
 %patch0 -p0
 %patch1 -p0
 
-# Set the version for setup.py 
+# Set the version for setup.py
 sed -r -i 's/^(__version__ = ).*/\1"%{version}"/' conda/__init__.py
 
 %build
@@ -76,13 +80,14 @@ sed -r -i 's/^(__version__ = ).*/\1"%{version}"/' conda/__init__.py
 %install
 %{__mkdir_p} %{buildroot}/%{install_path}
 
-export PYTHONPATH="%{buildroot}/%{install_path}/lib/python%{python3_version}/site-packages:$PYTHONPATH"
+export PYTHONPATH="%{buildroot}/%{install_path}/lib64/python%{python3_version}/site-packages:%{buildroot}/%{install_path}/lib/python%{python3_version}/site-packages:$PYTHONPATH"
 export CONDA_ROOT="%{buildroot}/%{install_path}"
 
 # Install required packages
 (cd setuptools-%{setuptools_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
 (cd pluggy-%{pluggy_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
 (cd pycosat-%{pycosat_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+pip3.8 install ruamel.yaml.clib-%{ruamelyamlclib_version}/ --no-deps --install-option="--prefix=%{buildroot}%{install_path}" --install-option="--install-scripts=%{buildroot}%{install_path}/bin"
 pip3.8 install ruamel-yaml-%{ruamel_version}/ --no-deps --install-option="--prefix=%{buildroot}%{install_path}" --install-option="--install-scripts=%{buildroot}%{install_path}/bin"
 (cd tqdm-%{tqdm_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
 
@@ -102,7 +107,7 @@ sed -i '1s|^|export CONDA_EXE="%{install_path}/bin/conda"\nexport _CE_M=""\nexpo
 
 #  Modified from https://src.fedoraproject.org/rpms/conda/blob/rawhide/f/conda.spec
 %{__mkdir_p} %{buildroot}%{install_path}/condarc.d
-%{__cat} << EOF > %{buildroot}%{install_path}/condarc.d/defaults.yaml 
+%{__cat} << EOF > %{buildroot}%{install_path}/condarc.d/defaults.yaml
 root_prefix: %{install_path}
 pkgs_dirs:
  - ~/.conda/pkgs
@@ -219,11 +224,14 @@ EOF
 
 %files
 %{OHPC_PUB}
-%doc README.md 
+%doc README.md
 %license LICENSE.txt
 
 
 %changelog
+* Tue Dec 20 2022 Sol Jerome <solj@utdallas.edu> - 22.11.1-2.ohpc
+- Fix building without network
+- Add package name prefix to patches
 * Sun Dec 18 2022 Georgia Stuart <georgia.stuart@utdallas.edu> - 22.11.1-ohpc
 - Update to 22.11.1
 - Remove venv workaround
