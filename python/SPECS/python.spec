@@ -26,6 +26,7 @@
 %define flit_version 3.8.0
 %define tomli_version 2.0.1
 %define typing_extensions_version 4.4.0
+%define wheel_version 0.38.4
 
 Name:       %{pname}%{vname}-%{compiler_family}%{PROJ_DELIM}
 Version:    3.8.15
@@ -41,7 +42,8 @@ Source4:    https://files.pythonhosted.org/packages/28/c6/c399f38dab6d3a2518a50d
 Source5:    https://files.pythonhosted.org/packages/10/e5/be08751d07b30889af130cec20955c987a74380a10058e6e8856e4010afc/flit_core-%{flit_version}.tar.gz
 Source6:    https://files.pythonhosted.org/packages/c0/3f/d7af728f075fb08564c5949a9c95e44352e23dee646869fa104a3b2060a3/tomli-%{tomli_version}.tar.gz
 Source7:    https://files.pythonhosted.org/packages/e3/a7/8f4e456ef0adac43f452efc2d0e4b242ab831297f1bac60ac815d37eb9cf/typing_extensions-%{typing_extensions_version}.tar.gz
-Source8:    OHPC_setup_compiler
+Source8:    https://files.pythonhosted.org/packages/a2/b8/6a06ff0f13a00fc3c3e7d222a995526cbca26c1ad107691b6b1badbbabf1/wheel-%{wheel_version}.tar.gz
+Source9:    OHPC_setup_compiler
 
 BuildRequires: zlib
 BuildRequires: zlib-devel
@@ -58,7 +60,7 @@ Requires: zlib
 The Python programming language and executables.
 
 %prep
-%setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -a 6 -a 7 -n c%{pname}-%{version}
+%setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -a 6 -a 7 -a 8 -n c%{pname}-%{version}
 
 %build
 %ohpc_setup_compiler
@@ -77,14 +79,19 @@ ln -sr %{buildroot}%{install_path}/bin/pip3 %{buildroot}%{install_path}/bin/pip
 export PYTHONPATH="%{buildroot}%{install_path}/lib64/python%{python3_version}/site-packages:%{buildroot}%{install_path}/lib/python%{python3_version}/site-packages:$PYTHONPATH"
 export PATH="%{buildroot}%{install_path}/bin:$PATH"
 
-(cd setuptools-%{setuptools_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} wheel-%{wheel_version}/
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} setuptools-%{setuptools_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} flit_core-%{flit_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} tomli-%{tomli_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} packaging-%{packaging_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} typing_extensions-%{typing_extensions_version}/
-(cd setuptools_scm-%{setuptools_scm_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path}  setuptools_scm-%{setuptools_scm_version}/
 
+rm -r %{buildroot}%{install_path}/lib/python%{python3_version}/test
 pathfix.py -pni %{install_path}/bin/python3 %{buildroot}%{install_path}
+
+# pathfix.py won't work on wheel for some reason 
+sed -i 's|%{buildroot}%{install_path}/bin/python%{python3_version}|%{install_path}/bin/python3|g' %{buildroot}%{install_path}/bin/wheel
 
 # Module File
 %{__mkdir_p}  %{buildroot}%{OHPC_MODULEDEPS}/%{compiler_family}/%{pname}%{vname}
