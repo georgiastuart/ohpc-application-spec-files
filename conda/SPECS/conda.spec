@@ -188,6 +188,8 @@ EOF
 %changelog
 * Wed Dec 21 2022 Georgia Stuart <georgia.stuart@utdallas.edu> 22.11.1-3.ohpc
 - Refactor out python and setuptools dependencies to rely on python38-ohpc
+- Refactor to only use pip install 
+- Add conda env entrypoint
 * Tue Dec 20 2022 Sol Jerome <solj@utdallas.edu> - 22.11.1-2.ohpc
 - Fix building without network
 - Add package name prefix to patches
