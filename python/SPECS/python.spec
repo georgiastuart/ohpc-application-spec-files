@@ -50,9 +50,21 @@ BuildRequires: zlib-devel
 BuildRequires: libffi-devel
 BuildRequires: openssl-devel
 BuildRequires: /usr/bin/pathfix.py
+BuildRequires: bzip2-devel
+BuildRequires: gdbm-devel
+BuildRequires: sqlite-devel
+BuildRequires: libuuid-devel
+BuildRequires: readline-devel
+BuildRequires: ncurses-devel
 Requires: libffi
 Requires: openssl
 Requires: zlib
+Requires: bzip2
+Requires: gdbm
+Requires: sqlite
+Requires: libuuid
+Requires: readline
+Requires: ncurses
 
 %define install_path %{OHPC_APPS}/%{compiler_family}/%{pname}%{vname}%{OHPC_CUSTOM_PKG_DELIM}/%{version}
 
