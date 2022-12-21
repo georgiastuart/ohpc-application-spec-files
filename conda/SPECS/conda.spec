@@ -38,7 +38,7 @@ Summary:    Conda Package Manager
 License:    BSD 3-Clause
 URL:        https://github.com/conda/conda
 
-Source0:   https://github.com/conda/conda/archive/refs/tags/%{version}.tar.gz
+Source0:   https://github.com/conda/conda/archive/refs/tags/%{version}.tar.gz#/conda-%{version}.tar.gz
 Source1:   https://files.pythonhosted.org/packages/a1/16/db2d7de3474b6e37cbb9c008965ee63835bba517e22cdb8c35b5116b5ce1/pluggy-%{pluggy_version}.tar.gz
 Source2:   https://github.com/conda/pycosat/archive/refs/tags/%{pycosat_version}.tar.gz#/pycosat-%{pycosat_version}.tar.gz
 Source3:   https://github.com/commx/ruamel-yaml/archive/refs/tags/%{ruamel_version}.tar.gz#/ruamel-yaml-%{ruamel_version}.tar.gz
@@ -89,19 +89,19 @@ export PYTHONPATH="%{buildroot}/%{install_path}/lib64/python%{python3_version}/s
 export CONDA_ROOT="%{buildroot}/%{install_path}"
 
 # Install required packages
-(cd pluggy-%{pluggy_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-(cd pycosat-%{pycosat_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-pip3.8 install ruamel.yaml.clib-%{ruamelyamlclib_version}/ --no-deps --prefix="%{buildroot}%{install_path}" 
-pip3.8 install ruamel-yaml-%{ruamel_version}/ --no-deps --prefix="%{buildroot}%{install_path}" 
-(cd tqdm-%{tqdm_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-(cd certifi-%{certifi_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-(cd urllib3-%{urllib3_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-pip3.8 install idna-%{idna_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
-(cd charset-normalizer-%{charset_normalizer_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-(cd requests-%{requests_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+python3.8 -m pip install pluggy-%{pluggy_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install pycosat-%{pycosat_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install ruamel.yaml.clib-%{ruamelyamlclib_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install ruamel-yaml-%{ruamel_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install tqdm-%{tqdm_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install certifi-%{certifi_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}"
+python3.8 -m pip install urllib3-%{urllib3_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}"  
+python3.8 -m pip install idna-%{idna_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install charset-normalizer-%{charset_normalizer_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
+python3.8 -m pip install requests-%{requests_version}/ --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
 
 # Install conda
-python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin
+python3.8 -m pip install . --no-deps --no-build-isolation --prefix="%{buildroot}%{install_path}" 
 
 # Install conda_package_handling and six
 %{__mkdir_p} conda_package_handling
@@ -112,7 +112,7 @@ tar xvf %{SOURCE5} -C conda_package_handling
 # TODO: FIX csh FILE
 %{__mkdir_p} %{buildroot}/%{install_path}/etc/profile.d
 install -m 0644 -Dt %{buildroot}/%{install_path}/etc/profile.d/ conda/shell/etc/profile.d/conda.{sh,csh}
-sed -i '1s|^|export CONDA_EXE="%{install_path}/bin/conda"\nexport _CE_M=""\nexport _CE_CONDA=""\nexport CONDA_PYTHON_EXE="/usr/bin/python%{python3_version}"\n\n|' %{buildroot}/%{install_path}/etc/profile.d/conda.sh
+sed -i '1s|^|export CONDA_EXE="%{install_path}/bin/conda"\nexport _CE_M=""\nexport _CE_CONDA=""\nexport CONDA_PYTHON_EXE="/opt/ohpc/pub/apps/gnu9/python38/3.8.15/bin/python3.8"\n\n|' %{buildroot}/%{install_path}/etc/profile.d/conda.sh
 
 #  Modified from https://src.fedoraproject.org/rpms/conda/blob/rawhide/f/conda.spec
 %{__mkdir_p} %{buildroot}%{install_path}/condarc.d
@@ -178,61 +178,6 @@ EOF
 ##
 set     ModulesVersion      "%{version}%{OHPC_CUSTOM_PKG_DELIM}"
 EOF
-
-# THIS IS COMMENTED OUT DUE TO AN ISSUE WITH source-sh AND OPENHPC LMOD
-# SEE ABOVE FOR LUA FILE
-
-# # Module File
-# %{__mkdir_p} %{buildroot}/%{OHPC_MODULES}/.%{pname}
-# %{__cat} << EOF > %{buildroot}/%{OHPC_MODULES}/.%{pname}/%{version}%{OHPC_CUSTOM_PKG_DELIM}
-# #%Module4.6##########################################################
-
-# proc ModulesHelp { } {
-
-#     puts stderr " "
-#     puts stderr "This module loads the %{pname} package for the Conda package and environment manager."
-#     puts stderr "\nVersion %{version}\n"
-#     puts stderr " "
-
-# }
-
-# module-whatis "Name: Conda Package Manager"
-# module-whatis "Version: %{version}"
-# module-whatis "Description: %{summary}"
-# module-whatis "URL %{url}"
-
-# set             version             %{version}
-
-
-# prepend-path    PATH                %{install_path}/condabin
-# prepend-path    PATH                %{install_path}/lib/python%{python3_version}/site-packages/conda-%{version}-py%{python3_version}.egg/conda/shell/bin
-# prepend-path    PYTHONPATH          %{install_path}/lib/python%{python3_version}/site-packages
-
-# setenv          %{PNAME}_DIR        %{install_path}
-# setenv          %{PNAME}_BIN        %{install_path}/condabin
-# setenv          %{PNAME}_LIB        %{install_path}/lib
-# setenv          CONDA_ROOT          %{install_path}
-# setenv          CONDA_ROOT_PREFIX   %{install_path}
-# setenv          _CONDA_ROOT         %{install_path}
-# setenv          CONDA_EXE           %{install_path}/condabin/conda
-
-# source-sh       bash                %{install_path}/etc/profile.d/conda.sh
-# # source-sh       dash                %{install_path}/etc/profile.d/conda.sh
-# # source-sh       zsh                 %{install_path}/etc/profile.d/conda.sh
-# # source-sh       csh                 %{install_path}/etc/profile.d/conda.csh
-# # source-sh       tcsh                %{install_path}/etc/profile.d/conda.csh
-
-# EOF
-
-# %{__cat} << EOF > %{buildroot}/%{OHPC_MODULES}/.%{pname}/.version.%{version}%{OHPC_CUSTOM_PKG_DELIM}
-# #%Module1.0#####################################################################
-# ##
-# ## version file for %{pname}-%{version}
-# ##
-# set     ModulesVersion      "%{version}%{OHPC_CUSTOM_PKG_DELIM}"
-# EOF
-
-
 
 %files
 %{OHPC_PUB}

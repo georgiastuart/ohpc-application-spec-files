@@ -1,11 +1,12 @@
---- setup.py	2022-12-06 21:16:40.000000000 -0600
-+++ setup_patch.py	2022-12-18 16:36:54.366218831 -0600
-@@ -81,7 +81,7 @@
+--- setup.py	2022-12-21 14:55:35.726602265 -0600
++++ setup_patch.py	2022-12-21 14:56:22.156601847 -0600
+@@ -81,7 +81,8 @@
      },
      entry_points={
          'console_scripts': [
 -            'conda=conda.cli.main_pip:main',
 +            'conda=conda.cli.main:main',
++            'conda-env = conda_env.cli.main:main',
          ],
      },
      install_requires=install_requires,
