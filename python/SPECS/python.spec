@@ -29,7 +29,9 @@ Source1:    OHPC_setup_compiler
 
 BuildRequires: zlib
 BuildRequires: zlib-devel
+BuildRequires: libffi-devel
 BuildRequires: /usr/bin/pathfix.py
+Requires: libffi
 
 %define install_path %{OHPC_APPS}/%{compiler_family}/%{pname}%{vname}%{OHPC_CUSTOM_PKG_DELIM}/%{version}
 
@@ -43,7 +45,9 @@ pathfix.py -pni %{install_path}/bin/python3 .
 %build
 %ohpc_setup_compiler
 
-./configure --prefix=%{install_path}
+./configure \
+  --prefix=%{install_path} \
+  --with-system-ffi
 make
 
 %install
