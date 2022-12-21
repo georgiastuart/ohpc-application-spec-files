@@ -17,6 +17,15 @@
 # Base package name
 %define pname python
 %define vname 38
+%define python3_version 3.8
+
+# Setuptools and dependencies
+%define setuptools_version 65.6.3
+%define setuptools_scm_version 7.1.0
+%define packaging_version 22.0
+%define flit_version 3.8.0
+%define tomli_version 2.0.1
+%define typing_extensions_version 4.4.0
 
 Name:       %{pname}%{vname}-%{compiler_family}%{PROJ_DELIM}
 Version:    3.8.15
@@ -25,13 +34,23 @@ Summary:    Python
 License:    Python License
 URL:        https://www.python.org
 Source0:    https://github.com/python/cpython/archive/refs/tags/v%{version}.tar.gz
-Source1:    OHPC_setup_compiler
+Source1:    https://files.pythonhosted.org/packages/b6/21/cb9a8d0b2c8597c83fce8e9c02884bce3d4951e41e807fc35791c6b23d9a/setuptools-%{setuptools_version}.tar.gz
+Source2:    https://files.pythonhosted.org/packages/98/12/2c1e579bb968759fc512391473340d0661b1a8c96a59fb7c65b02eec1321/setuptools_scm-%{setuptools_scm_version}.tar.gz
+Source3:    https://files.pythonhosted.org/packages/6b/f7/c240d7654ddd2d2f3f328d8468d4f1f876865f6b9038b146bec0a6737c65/packaging-%{packaging_version}.tar.gz
+Source4:    https://files.pythonhosted.org/packages/28/c6/c399f38dab6d3a2518a50d334d038083483a787f663743d713f1d245bde3/flit-%{flit_version}.tar.gz
+Source5:    https://files.pythonhosted.org/packages/10/e5/be08751d07b30889af130cec20955c987a74380a10058e6e8856e4010afc/flit_core-%{flit_version}.tar.gz
+Source6:    https://files.pythonhosted.org/packages/c0/3f/d7af728f075fb08564c5949a9c95e44352e23dee646869fa104a3b2060a3/tomli-%{tomli_version}.tar.gz
+Source7:    https://files.pythonhosted.org/packages/e3/a7/8f4e456ef0adac43f452efc2d0e4b242ab831297f1bac60ac815d37eb9cf/typing_extensions-%{typing_extensions_version}.tar.gz
+Source8:    OHPC_setup_compiler
 
 BuildRequires: zlib
 BuildRequires: zlib-devel
 BuildRequires: libffi-devel
+BuildRequires: openssl-devel
 BuildRequires: /usr/bin/pathfix.py
 Requires: libffi
+Requires: openssl
+Requires: zlib
 
 %define install_path %{OHPC_APPS}/%{compiler_family}/%{pname}%{vname}%{OHPC_CUSTOM_PKG_DELIM}/%{version}
 
@@ -39,8 +58,7 @@ Requires: libffi
 The Python programming language and executables.
 
 %prep
-%setup -q -n c%{pname}-%{version}
-pathfix.py -pni %{install_path}/bin/python3 .
+%setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -a 6 -a 7 -n c%{pname}-%{version}
 
 %build
 %ohpc_setup_compiler
@@ -55,6 +73,18 @@ make DESTDIR=%{buildroot} install
 ln -sr %{buildroot}%{install_path}/bin/python3 %{buildroot}%{install_path}/bin/python
 ln -sr %{buildroot}%{install_path}/bin/pip3 %{buildroot}%{install_path}/bin/pip
 
+# Install some nice utilities like setuptools
+export PYTHONPATH="%{buildroot}%{install_path}/lib64/python%{python3_version}/site-packages:%{buildroot}%{install_path}/lib/python%{python3_version}/site-packages:$PYTHONPATH"
+export PATH="%{buildroot}%{install_path}/bin:$PATH"
+
+(cd setuptools-%{setuptools_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} flit_core-%{flit_version}/ 
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} tomli-%{tomli_version}/ 
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} packaging-%{packaging_version}/
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} typing_extensions-%{typing_extensions_version}/
+(cd setuptools_scm-%{setuptools_scm_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
+
+pathfix.py -pni %{install_path}/bin/python3 %{buildroot}%{install_path}
 
 # Module File
 %{__mkdir_p}  %{buildroot}%{OHPC_MODULEDEPS}/%{compiler_family}/%{pname}%{vname}
@@ -76,6 +106,9 @@ prepend_path("PATH", "%{install_path}/bin")
 prepend_path("INCLUDE", "%{install_path}/include")
 prepend_path("LD_LIBRARY_PATH", "%{install_path}/lib")
 prepend_path("MANPATH", "%{install_path}/man")
+
+prepend_path("PYTHONPATH", "%{install_path}/lib64/python%{python3_version}/site-packages")
+prepend_path("PYTHONPATH", "%{install_path}/lib/python%{python3_version}/site-packages")
 
 EOF
 
