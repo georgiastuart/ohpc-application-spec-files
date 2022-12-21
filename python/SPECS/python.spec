@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------bh-
-# This RPM .spec file builds Mamba Package Manager to be compatible
+# This RPM .spec file builds Python to be compatible
 # with the OpenHPC project.
 #
 # It may have been modified from the default version supplied by the underlying
@@ -33,7 +33,7 @@ Release:    1%{?dist}
 Summary:    Python
 License:    Python License
 URL:        https://www.python.org
-Source0:    https://github.com/python/cpython/archive/refs/tags/v%{version}.tar.gz
+Source0:    https://github.com/python/cpython/archive/refs/tags/v%{version}.tar.gz#/c%{pname}-%{version}.tar.gz
 Source1:    https://files.pythonhosted.org/packages/b6/21/cb9a8d0b2c8597c83fce8e9c02884bce3d4951e41e807fc35791c6b23d9a/setuptools-%{setuptools_version}.tar.gz
 Source2:    https://files.pythonhosted.org/packages/98/12/2c1e579bb968759fc512391473340d0661b1a8c96a59fb7c65b02eec1321/setuptools_scm-%{setuptools_scm_version}.tar.gz
 Source3:    https://files.pythonhosted.org/packages/6b/f7/c240d7654ddd2d2f3f328d8468d4f1f876865f6b9038b146bec0a6737c65/packaging-%{packaging_version}.tar.gz
@@ -66,10 +66,10 @@ The Python programming language and executables.
 ./configure \
   --prefix=%{install_path} \
   --with-system-ffi
-make
+make %{?_smp_mflags}
 
 %install
-make DESTDIR=%{buildroot} install 
+make DESTDIR=%{buildroot} install
 ln -sr %{buildroot}%{install_path}/bin/python3 %{buildroot}%{install_path}/bin/python
 ln -sr %{buildroot}%{install_path}/bin/pip3 %{buildroot}%{install_path}/bin/pip
 
@@ -78,8 +78,8 @@ export PYTHONPATH="%{buildroot}%{install_path}/lib64/python%{python3_version}/si
 export PATH="%{buildroot}%{install_path}/bin:$PATH"
 
 (cd setuptools-%{setuptools_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
-python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} flit_core-%{flit_version}/ 
-python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} tomli-%{tomli_version}/ 
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} flit_core-%{flit_version}/
+python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} tomli-%{tomli_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} packaging-%{packaging_version}/
 python3.8 -m pip install --no-index --no-build-isolation --prefix=%{buildroot}%{install_path} typing_extensions-%{typing_extensions_version}/
 (cd setuptools_scm-%{setuptools_scm_version} && python3.8 setup.py install --prefix=%{buildroot}%{install_path} --install-scripts=%{buildroot}%{install_path}/bin)
@@ -91,7 +91,7 @@ pathfix.py -pni %{install_path}/bin/python3 %{buildroot}%{install_path}
 %{__cat} << EOF > %{buildroot}/%{OHPC_MODULEDEPS}/%{compiler_family}/%{pname}%{vname}/%{version}%{OHPC_CUSTOM_PKG_DELIM}.lua
 help([[
   This module loads the %{pname} programming language and executables.
-  
+
   Version %{version}
 ]])
 
@@ -131,4 +131,3 @@ EOF
 %changelog
 * Tue Dec 20 2022 Georgia Stuart <georgia.stuart@gmail.com> - 3.8.15
 - Initial Python ohpc RPM
-
