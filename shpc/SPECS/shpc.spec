@@ -174,6 +174,7 @@ EOF
 * Thu Dec 22 2022 Georgia Stuart <georgia.stuart@utdallas.edu> - 0.1.17-1.ohpc
 - Refactor to rely on OHPC compatible Python 3.8 
 - Update to v0.1.17
+- Remove no sha patch
 * Thu Oct 13 2022 Georgia Stuart <georgia.stuart@utdallas.edu> - 0.1.14-3.ohpc
 - Actually fix patch
 * Thu Oct 13 2022 Georgia Stuart <georgia.stuart@utdallas.edu> - 0.1.14-2.ohpc
