@@ -28,35 +28,35 @@
 %define fmt_version 9.1.0
 %define conda_version 22.11.1
 
-# Mamba maintainers label the source code with date, not version :( 
+# Mamba maintainers label the source code with date, not version :(
 %define date 2022.11.01
 
 Name:       %{pname}-%{compiler_family}%{PROJ_DELIM}
 Version:    1.0.0
-Release:    1%{?dist}
+Release:    3%{?dist}
 Summary:    Mamba Package Manager
 License:    BSD-3-Clause
 URL:        https://github.com/mamba-org/mamba
-Source0:    https://github.com/mamba-org/mamba/archive/refs/tags/%{date}.tar.gz
+Source0:    https://github.com/mamba-org/mamba/archive/refs/tags/%{date}.tar.gz#/mamba-%{date}.tar.gz
 Source1:    https://github.com/nlohmann/json/releases/download/v%{nlohmann_json_version}/json.tar.xz
-Source2:    https://github.com/pybind/pybind11/archive/refs/tags/v%{pybind11_version}.tar.gz
-Source3:    https://github.com/DaanDeMeyer/reproc/archive/refs/tags/v%{reproc_version}.tar.gz
-Source4:    https://github.com/TartanLlama/expected/archive/refs/tags/v%{expected_version}.tar.gz
-Source5:    https://github.com/ikalnytskyi/termcolor/archive/refs/tags/v%{termcolor_version}.tar.gz
+Source2:    https://github.com/pybind/pybind11/archive/refs/tags/v%{pybind11_version}.tar.gz#/pybind11-%{pybind11_version}.tar.gz
+Source3:    https://github.com/DaanDeMeyer/reproc/archive/refs/tags/v%{reproc_version}.tar.gz#/reproc-%{reproc_version}.tar.gz
+Source4:    https://github.com/TartanLlama/expected/archive/refs/tags/v%{expected_version}.tar.gz#/expected-%{expected_version}.tar.gz
+Source5:    https://github.com/ikalnytskyi/termcolor/archive/refs/tags/v%{termcolor_version}.tar.gz#/termcolor-%{termcolor_version}.tar.gz
 Source6:    https://github.com/curl/curl/releases/download/curl-7_86_0/curl-%{curl_version}.tar.bz2
-Source7:    https://github.com/openSUSE/libsolv/archive/refs/tags/%{libsolv_version}.tar.gz
-Source8:    https://github.com/gabime/spdlog/archive/refs/tags/v%{spdlog_version}.tar.gz
-Source9:    https://github.com/fmtlib/fmt/archive/refs/tags/%{fmt_version}.tar.gz
-Source10:   OHPC_setup_compiler
+Source7:    https://github.com/openSUSE/libsolv/archive/refs/tags/%{libsolv_version}.tar.gz#/libsolve-%{libsolv_version}.tar.gz
+Source8:    https://github.com/gabime/spdlog/archive/refs/tags/v%{spdlog_version}.tar.gz#/spdlog-%{spdlog_version}.tar.gz
+Source9:    https://github.com/fmtlib/fmt/archive/refs/tags/%{fmt_version}.tar.gz#/fmt-%{fmt_version}.tar.gz
+Source10:   https://raw.githubusercontent.com/TartanLlama/tl-cmake/master/add-tl.cmake
+Source11:   OHPC_setup_compiler
 
 
 Patch0:     lib_path.patch
+Patch1:     0001-dont-fetch-from-git.patch
 
 %define install_path %{OHPC_APPS}/%{compiler_family}/%{pname}%{OHPC_CUSTOM_PKG_DELIM}/%{version}
 
-BuildRequires: python38
-BuildRequires: python38-devel
-BuildRequires: python38-pip
+BuildRequires: python38-%{compiler_family}%{PROJ_DELIM}
 BuildRequires: cmake
 BuildRequires: ninja-build
 BuildRequires: libarchive-devel
@@ -68,11 +68,11 @@ BuildRequires: cli11-devel
 BuildRequires: openssl-devel
 BuildRequires: git
 BuildRequires: patchelf
-Requires: python38
+Requires: python38-%{compiler_family}%{PROJ_DELIM}
 Requires: openssl
 Requires: libarchive
 Requires: libsodium
-Requires: conda-ohpc
+Requires: conda%{PROJ_DELIM}
 
 
 %description
@@ -82,9 +82,13 @@ Mamba is a reimplementation of the conda package manager in C++.
 %prep
 %setup -q -a 1 -a 2 -a 3 -a 4 -a 5 -a 6 -a 7 -a 8 -a 9 -n %{pname}-%{date}
 %patch0 -p0
+%patch1 -p0
+cp %SOURCE10 expected-%{expected_version}
 
 %build
 %ohpc_setup_compiler
+
+module load python38
 
 cd reproc-%{reproc_version}
 
@@ -139,7 +143,7 @@ cd ../libsolv-%{libsolv_version}
 
 cmake -B build \
   -DCMAKE_INSTALL_PREFIX=%{install_path}/libsolv \
-  -DENABLE_CONDA=ON 
+  -DENABLE_CONDA=ON
 cmake --build build
 make DESTDIR=%{buildroot} install -C build/
 
@@ -149,7 +153,7 @@ cmake -B build \
   -DCMAKE_INSTALL_PREFIX=%{install_path}/fmt \
   -DFMT_TEST=OFF \
   -DFMT_DOC=OFF \
-  -DBUILD_SHARED_LIBS=ON 
+  -DBUILD_SHARED_LIBS=ON
 cmake --build build
 make DESTDIR=%{buildroot} install -C build/
 
@@ -173,6 +177,8 @@ cmake --build build/
 %install
 %ohpc_setup_compiler
 
+module load python38
+
 make DESTDIR=%{buildroot} install -C reproc-%{reproc_version}/build
 make DESTDIR=%{buildroot} install -C spdlog-%{spdlog_version}/build
 make DESTDIR=%{buildroot} install -C curl-%{curl_version}/build
@@ -183,8 +189,8 @@ make DESTDIR=%{buildroot} install -C build/
 mv %{buildroot}$PWD/libmambapy/libmambapy/bindings.cpython-38-x86_64-linux-gnu.so $PWD/libmambapy/libmambapy/
 export LD_LIBRARY_PATH=%{buildroot}%{install_path}/libmamba/lib64:%{buildroot}%{install_path}/libsolv/lib64:%{buildroot}%{install_path}/curl/lib64:%{buildroot}%{install_path}/spdlog/lib64:%{buildroot}%{install_path}/fmt/lib64:%{buildroot}%{install_path}/reproc/lib64:$LD_LIBRARY_PATH
 
-pip3.8 install libmambapy/ --no-deps --install-option="--prefix=%{buildroot}%{install_path}/libmambapy" --install-option="--install-scripts=%{buildroot}%{install_path}/bin" --global-option=build_ext --global-option="-L%{buildroot}%{install_path}/libmamba/lib64:%{buildroot}%{install_path}/curl/lib64" 
-pip3.8 install mamba/ --no-deps --install-option="--prefix=%{buildroot}%{install_path}/mamba" --install-option="--install-scripts=%{buildroot}%{install_path}/bin" --global-option=build_ext --global-option="-L%{buildroot}%{install_path}/libmamba/lib64:%{buildroot}%{install_path}/curl/lib64" 
+pip3.8 install libmambapy/ --no-deps --prefix="%{buildroot}%{install_path}/libmambapy"
+pip3.8 install mamba/ --no-deps --prefix="%{buildroot}%{install_path}/mamba"
 
 # Remove buildroot from cmake targets
 sed -i 's|%{buildroot}||g' %{buildroot}%{install_path}/libmamba/lib64/cmake/libmamba/libmambaTargets.cmake
@@ -192,7 +198,7 @@ patchelf --set-rpath '%{install_path}/reproc/lib64:%{install_path}/curl/lib64:%{
 patchelf --set-rpath '%{install_path}/reproc/lib64:%{install_path}/curl/lib64:%{install_path}/libsolv/lib64:%{install_path}/fmt/lib64:%{install_path}/spdlog/lib64:' %{buildroot}%{install_path}/libmambapy/lib/python3.8/site-packages/libmambapy/bindings.cpython-38-x86_64-linux-gnu.so
 
 # Make it so mamba doesn't try to find itself via conda_exe
-sed -i 's|$(\\dirname "${CONDA_EXE}")/mamba|%{install_path}/bin/mamba|' %{buildroot}%{install_path}/mamba/etc/profile.d/mamba.sh
+sed -i 's|$(\\dirname "${CONDA_EXE}")/mamba|%{install_path}/mamba/bin/mamba|' %{buildroot}%{install_path}/mamba/etc/profile.d/mamba.sh
 
 # Module File
 %{__mkdir_p}  %{buildroot}%{OHPC_MODULEDEPS}/%{compiler_family}/%{pname}
@@ -200,7 +206,7 @@ sed -i 's|$(\\dirname "${CONDA_EXE}")/mamba|%{install_path}/bin/mamba|' %{buildr
 help([[
   This module loads the %{pname} package for the Mamba package and environment
   manager.
-  
+
   Version %{version}
 ]])
 
@@ -224,7 +230,8 @@ source_sh("bash", "%{install_path}/mamba/etc/profile.d/mamba.sh")
 -- source_sh("csh", "%{install_path}/etc/profile.d/conda.csh")
 -- source_sh("tcsh", "%{install_path}/etc/profile.d/conda.csh")
 
-depends_on("conda/%{conda_version}")
+depends_on("python38")
+depends_on("conda")
 EOF
 # #%Module1.0##########################################################
 
@@ -275,6 +282,10 @@ EOF
 %license LICENSE
 
 %changelog
+* Thu Dec 22 2022 Sol Jerome <solj@utdallas.edu> 1.0.0-3.ohpc
+- Fix expected build to work without network
+* Wed Dec 21 2022 Georgia Stuart <georgia.stuart@gmail.com> 1.0.0-2.ohpc
+- Refactor out python dependencies to rely on python38-ohpc
+- Fix path for Mamba executable
 * Thu Dec 15 2022 Georgia Stuart <georgia.stuart@gmail.com> - 1.0.0
 - Initial Mamba ohpc RPM
-
