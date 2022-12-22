@@ -5,7 +5,10 @@ suitable for installing `shpc` on an OpenHPC system.
 https://singularity-hpc.readthedocs.io/[Singularity HPC] is a module manager for
 containers run by Singularity or Apptainer.
 
-== Building the `shpc-ohpc` RPM
+NOTE: SHPC only depends on a compiler since the OpenHPC version of python in
+this repository is compiler dependent. It is a pure Python library.
+
+== Building the `shpc-<compiler>-ohpc` RPM
 
 To simplify building the RPM for OpenHPC, we will use 
 https://github.com/rpm-software-management/mock[Mock], a chroot build 
@@ -18,13 +21,15 @@ to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to
 the `shpc-ohpc` spec file (typically in the `SPEC` directory), and `$SRPM`, 
 to refer to the source RPM.
 
-=== Building the `shpc-ohpc` SRPM
+=== Building the `shpc-<compiler>-ohpc` SRPM
 
 Mock works by building an existing source RPM (SRPM). To build the SRPM, run the
 following command from the root directory of this project:
 
 ```bash
-rpmbuild -bs --define="_topdir $PWD" $SPEC
+rpmbuild -bs --define="_topdir $PWD" \
+  --define="OHPC_COMPILER_FAMILY <desired compiler family>" \
+  $SPEC
 ```
 
 This will build an `SRPM` in the `SRPMS` directory, relative to the root of this
@@ -32,7 +37,7 @@ project. Next, we use Mock to create a clean build environment and build the
 final RPM. In the root directory of this project, run:
 
 ```bash
-mock -r $OHPC_CFG --enable-network --resultdir RPMS/ $SRPM
+mock -r $OHPC_CFG --resultdir RPMS/ $SRPM
 ```
 
 If all goes well, this will result in an RPM in the `RPMS` directory called 
