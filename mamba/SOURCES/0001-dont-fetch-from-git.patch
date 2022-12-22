@@ -1,0 +1,24 @@
+--- expected-1.0.0/CMakeLists.txt.orig  2022-12-22 11:12:09.566688832
+-0600
++++ expected-1.0.0/CMakeLists.txt       2022-12-22 11:16:32.575420953
+-0600
+@@ -4,17 +4,8 @@
+
+ option(EXPECTED_ENABLE_TESTS "Enable tests." ON)
+
+ -include(FetchContent)
+ -FetchContent_Declare(
+ -  tl_cmake
+ -  GIT_REPOSITORY https://github.com/TartanLlama/tl-cmake.git
+ -)
+ -FetchContent_GetProperties(tl_cmake)
+ -if(NOT tl_cmake_POPULATED)
+ -  FetchContent_Populate(tl_cmake)
+ -  set(CMAKE_MODULE_PATH ${tl_cmake_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+ -endif()
+ -include(add-tl)
+ +include(add-tl.cmake)
+ +set(CMAKE_MODULE_PATH ${tl_cmake_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+
+  tl_add_library(expected SOURCES
+                  include/tl/expected.hpp)
