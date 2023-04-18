@@ -1,7 +1,7 @@
 = LAMMPS OpenHPC RPM
 
 This repository provides the `spec` file and patches needed to build an RPM
-suitable for installing https://www.lammps.org[LAMMPS] on an OpenHPC system. 
+suitable for installing https://www.lammps.org[LAMMPS] on an OpenHPC system.
 
 == Obtaining the LAMMPS source code
 
@@ -10,36 +10,36 @@ https://download.lammps.org/tars/lammps-stable.tar.gz[here].
 
 == Building the `lammps-<compiler>-<mpi>-ohpc` RPM
 
-To simplify building the RPM for OpenHPC, we will use 
-https://github.com/rpm-software-management/mock[Mock], a chroot build 
+To simplify building the RPM for OpenHPC, we will use
+https://github.com/rpm-software-management/mock[Mock], a chroot build
 environment manager, and the Mock Config files found in the `ohpc-rpm-helpers`
-directory. To get started, follow the getting started with OpenHPC and Mock 
+directory. To get started, follow the getting started with OpenHPC and Mock
 documentation.
 
-NOTE: The following documentation will use the variables `$OHPC_CFG`, to refer 
-to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to 
-the `conda-ohpc` spec file (typically in the `SPEC` directory), and `$SRPM`, 
+NOTE: The following documentation will use the variables `$OHPC_CFG`, to refer
+to your selected OpenHPC Mock configuration, `$SPEC`, to refer to the path to
+the `conda-ohpc` spec file (typically in the `SPEC` directory), and `$SRPM`,
 to refer to the source RPM.
 
-Mock works by building from an existing source RPM (SRPM). To build the SRPM, 
+Mock works by building from an existing source RPM (SRPM). To build the SRPM,
 run the following command from the root directory of this project:
 
 ```bash
 rpmbuild -bs --define="_topdir $PWD" \
-  --define="compiler_family <desired compiler family>" \ 
+  --define="compiler_family <desired compiler family>" \
   --define="mpi_family <desired mpi family>" \
   $SPEC
 ```
 
 This will build an `SRPM` in the `SRPMS` directory, relative to the root of this
-project. Next, we use Mock to create a clean build environment and build the 
+project. Next, we use Mock to create a clean build environment and build the
 final RPM. In the root directory of this project, run:
 
 ```bash
 mock -r $OHPC_CFG --define="compiler_family <desired compiler family>" --define="mpi_family <desired mpi family>" --resultdir RPMS/ $SRPM
 ```
 
-If all goes well, this will result in an RPM in the `RPMS` directory 
-called something like 
-`lammps-gnu9-openmpi4-ohpc-23Jun2022-1.ohpc.2.0.0.x86_64.rpm` depending 
+If all goes well, this will result in an RPM in the `RPMS` directory
+called something like
+`lammps-gnu9-openmpi4-ohpc-23Jun2022-1.ohpc.2.0.0.x86_64.rpm` depending
 on the architecture you built for and the LAMMPS version.
